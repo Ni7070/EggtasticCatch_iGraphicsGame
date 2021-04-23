@@ -1,0 +1,440 @@
+#include "iGraphics.h"
+#include "bitmap_loader.h"
+#include<stdlib.h>
+#include<time.h>
+#include<string.h>
+#include<iostream>
+
+int myInt;
+int hen;
+int width = 800, length = 700;
+//basket
+int buckyX = 300, buckyY = 80;
+char buckyImage[10];
+//Flag
+int initialStateFlag = 1, eggStateFlag = 0,levelFlag1 = -1;
+bool musicOn = true;
+//score
+int score = 0;
+char scr[100];
+char drp[20];
+char lyf[20];
+char lvl[10];
+int drop = 0;
+int drp7;
+int life = 5;
+char eggnimation[10];
+//level
+int level=1;
+//time
+int startTime, endTime, timeElapsed, second, minute;
+char timeM[5],timeS[5] ;
+//animation timer
+int besTime, beeTime, nTime, brokenEggFlag = 0;
+int temp;
+//button
+char buttonG[10][20] = {"playG.bmp", "helpG.bmp", "aboutG.bmp", "HighScoreG.bmp"};
+char buttonR[10][20] = {"playR.bmp", "helpR.bmp", "aboutR.bmp", "highScoreR.bmp"};
+char button[10][20];
+typedef struct myChicken{
+	int xHen;
+	int yHen;
+	char henImage[20];
+} myChicken;
+myChicken chick[3];
+ 
+typedef struct myEgg{
+	int xEgg;
+	int yEgg;
+	char eggImage[15];
+	int crrntState;
+	int brokenEggStartTime;
+} myEgg;
+myEgg egg[3];
+
+typedef struct coordinate{
+	int x;
+	int y;
+} coordinate;
+coordinate bCoordinate[4];
+
+int choosenHen()
+{
+	return rand() % 3 + 1;
+}
+ 
+void AssignHen()
+{	
+	// Positions of chickens
+	chick[0].xHen = 50;
+	chick[1].xHen = 300;
+	chick[2].xHen = 550;
+	chick[0].yHen = 450;
+	chick[1].yHen = 450;
+	chick[2].yHen = 450;
+
+	strcpy(chick[0].henImage, "chicken1.bmp");
+	strcpy(chick[1].henImage, "chicken2.bmp");
+	strcpy(chick[2].henImage, "chicken3.bmp");
+	
+}
+
+void AssignEgg()
+{
+	if(initialStateFlag)
+	{
+		egg[0].xEgg = 154;
+		egg[0].crrntState = 0;
+		egg[1].xEgg = 394;
+		egg[1].crrntState = 0;
+		egg[2].xEgg = 634;
+		egg[2].crrntState = 0;
+		egg[0].yEgg = 450;
+		egg[1].yEgg = 450;
+		egg[2].yEgg = 450;
+
+		for(int i=0; i<3; i++)
+		{	
+			strcpy(egg[i].eggImage, "eggy2.bmp");
+		}
+
+		initialStateFlag = 0;
+	}
+}
+
+void AssignInMenu()
+{
+	int interval = 50;
+	for(int i=3;i>=0;i--)
+		{
+			bCoordinate[i].x = 200;
+			bCoordinate[i].y = interval;
+			interval += 100;
+		}
+}
+void showBasket()
+{
+	if(score == 0)
+	strcpy(buckyImage, "bucky.bmp");
+	else if(score == 10)
+	strcpy(buckyImage, "bucky2.bmp");
+	else if(score == 20)
+	strcpy(buckyImage, "bucky3.bmp");
+	else if(score == 30)
+	strcpy(buckyImage, "bucky4.bmp");
+	else if(score >= 40)
+	strcpy(buckyImage, "bucky5.bmp");
+}
+
+void drawRoadLines(int offset)
+{
+	
+}
+
+void showHen()
+{
+	iShowBMP2(chick[0].xHen,chick[0].yHen, chick[0].henImage, 0 );
+	iShowBMP2(chick[1].xHen,chick[1].yHen, chick[1].henImage, 0 );
+	iShowBMP2(chick[2].xHen,chick[2].yHen, chick[2].henImage, 0 );
+}	
+
+void showEgg()
+{
+	if(eggStateFlag == 0)
+	{
+		hen = choosenHen();
+		eggStateFlag = 1;
+	}
+	
+	iShowBMP2(egg[hen - 1].xEgg, egg[hen - 1].yEgg, egg[hen - 1].eggImage, 0 );
+	
+	if(egg[hen - 1].yEgg < 100)
+	{
+		eggStateFlag = 0;
+		initialStateFlag = 1;
+	}
+	else egg[hen - 1].yEgg -=2;
+
+}
+
+void Scoreboard()
+{
+	if(eggStateFlag == 1 && initialStateFlag == 0)
+	{
+		if((egg[hen - 1].yEgg + 5 < buckyY + 110 && egg[hen - 1].yEgg > buckyY + 103) && (egg[hen - 1].xEgg >= buckyX+2 && egg[hen - 1].xEgg <= buckyX + 100))
+		{		
+				eggStateFlag = 0;
+				initialStateFlag = 1;
+				score += 10;
+		}
+		if(egg[hen - 1].yEgg < 111)
+		{
+			brokenEggFlag = 1;
+			//iShowBMP2(egg[hen - 1].xEgg, 80, "brokenEgg.bmp", 0);
+			drop += 1;
+			
+		}
+	}
+		
+		if(brokenEggFlag == 1)
+		{	
+			temp = egg[hen - 1].xEgg;
+			iShowBMP2(temp, 80, "brokenEgg.bmp", 0);
+			brokenEggFlag = 0;
+			//nTime =(beeTime-besTime)/CLOCKS_PER_SEC;	
+			//beeTime = clock();
+			
+		}	
+			
+		
+		//if(nTime >= 10)
+			   
+				//brokenEggFlag = 0;
+		
+	drp7 = drop/7;
+	if(drp7 == 5)
+	{
+		levelFlag1 = 4;
+
+	}
+
+	
+	
+}
+
+void showText()
+{	
+	sprintf(lvl,"Level : %d",level, GLUT_BITMAP_TIMES_ROMAN_24);
+	sprintf(scr,"Score : %d",score, GLUT_BITMAP_TIMES_ROMAN_24);
+	//sprintf(drp ,"Drop : %d",drp7, GLUT_BITMAP_TIMES_ROMAN_24);
+	sprintf(timeM,"%d:",minute, GLUT_BITMAP_TIMES_ROMAN_24);
+	if(second<10)
+	sprintf(timeS,"0%d",second, GLUT_BITMAP_TIMES_ROMAN_24);
+	else
+	sprintf(timeS,"%d",second, GLUT_BITMAP_TIMES_ROMAN_24);
+	iSetColor(252,255,255);
+	iText(50,644,scr,GLUT_BITMAP_TIMES_ROMAN_24);
+	//iText(200,620,drp,GLUT_BITMAP_TIMES_ROMAN_24);
+	iText(328,660,lvl,GLUT_BITMAP_TIMES_ROMAN_24);
+	iText(350,610,timeM,GLUT_BITMAP_TIMES_ROMAN_24);
+	iText(370,610,timeS,GLUT_BITMAP_TIMES_ROMAN_24);
+}
+void Music()
+{
+	if (musicOn)
+		PlaySound("music\\murka.wav", NULL , SND_LOOP | SND_ASYNC);
+}
+void eggnimation1()
+{
+	if(drp7 == 1)
+	iShowBMP2(450, 600, "eggnimation1.bmp", 0);
+	else if(drp7 == 2)
+	iShowBMP2(450, 600, "eggnimation2.bmp", 0);
+	else if(drp7 == 3)
+	iShowBMP2(450, 600, "eggnimation3.bmp", 0);
+	else if(drp7 == 4)
+	iShowBMP2(450, 600, "eggnimation4.bmp", 0);
+
+}
+void Timer()
+{	endTime=clock();
+	timeElapsed=(endTime-startTime)/CLOCKS_PER_SEC;
+	second=timeElapsed % 60;
+	minute=timeElapsed / 60;
+}
+void Menu()
+{
+	iShowBMP(0, 0, "menu2.bmp");
+	AssignInMenu();
+	for(int i=0;i<4;i++)
+		{
+			iShowBMP2(bCoordinate[i].x, bCoordinate[i].y, buttonR[i], 0);
+		}
+
+
+}
+
+
+void level01()
+{
+	// Setting Background
+	iShowBMP(0, 0, "bg3.bmp");
+	
+	// Assignment of elements
+	AssignHen();
+	AssignEgg();
+
+	// Showing elements
+	//dropEgg();
+    Scoreboard();
+	showEgg();
+	showHen();
+	
+
+	showBasket();
+	iShowBMP2(buckyX, buckyY, buckyImage, 0);
+
+	//scoreboard
+    iSetColor(144,94,43);
+	iFilledRectangle(0, 600, 800, 100);
+	iSetColor(0,0,0);
+	iFilledRectangle(340, 605, 60, 30);
+	iShowBMP(20, 620, "scoreBG.bmp");
+	iShowBMP2(305, 640,"levelBG.bmp",0);
+	Timer();
+	eggnimation1();
+	iShowBMP2(700,600, "backButton.BMP",255);
+    
+	
+	showText();
+	
+}
+void iDraw()
+{	
+	iClear();
+	if(levelFlag1 == -1)
+	{
+		Menu();
+	}
+	else if(levelFlag1 == 0)
+	{
+		level01();
+	}
+	else if(levelFlag1 == 1)
+	{
+		iShowBMP(0, 0, "helpNote.BMP");
+		iShowBMP2(640,550, "backButton.BMP",255);
+		
+	}
+	else if(levelFlag1 == 2)
+	{
+		iShowBMP(0, 0, "aboutNote.BMP");
+		iShowBMP2(640,550, "backButton.BMP",255);
+		
+	}
+	else if(levelFlag1 == 3)
+	{
+		iFilledRectangle(0,0,800,700);
+		iShowBMP2(640,550, "backButton.BMP",255);
+		
+	}
+
+	else if(levelFlag1 == 4)
+	iShowBMP(0, 0, "gameOver.BMP");
+	
+}
+	 	
+
+
+
+
+/*
+ function iMouseMove() is called when the user presses and drags the mouse.
+ (mx, my) is the position where the mouse pointer is.
+ */
+void iMouseMove(int mx, int my)
+{
+	printf("x = %d, y= %d\n", mx, my);
+	//place your codes here
+}
+
+/*
+ function iMouse() is called when the user presses/releases the mouse.
+ (mx, my) is the position where the mouse pointer is.
+ */
+void iMouse(int button, int state, int mx, int my)
+{	
+	if(levelFlag1 == -1){
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+		{
+		//place your codes here
+		for(int i=0;i<4;i++)
+			{
+				if(mx >= bCoordinate[i].x && mx <= bCoordinate[i].x + 300 && my >= bCoordinate[i].y && my <= bCoordinate[i].y + 80)
+					levelFlag1 = i;
+
+			}
+	}
+	}
+	if(levelFlag1 == 0){
+		if(mx >= 700 && mx <= 700 + 100 && my >= 600 && my <= 600 + 100)
+					levelFlag1 = -1;
+	}
+	if(levelFlag1 == 1){
+		if(mx >= 640 && mx <= 640 + 100 && my >= 550 && my <= 550 + 100)
+					levelFlag1 = -1;
+	}
+	if(levelFlag1 == 2){
+		if(mx >= 640 && mx <= 640 + 100 && my >= 550 && my <= 550 + 100)
+					levelFlag1 = -1;
+	}
+	if(levelFlag1 == 3){
+		if(mx >= 640 && mx <= 640 + 100 && my >= 550 && my <= 550 + 100)
+					levelFlag1 = -1;
+	}
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP)
+	{
+		//place your codes here
+		
+	}
+}
+
+/*
+ function iKeyboard() is called whenever the user hits a key in keyboard.
+ key- holds the ASCII value of the key pressed.
+ */
+void iKeyboard(unsigned char key)
+{
+	if (key == 'q')
+	{
+		exit(0);
+	}
+	if (key == 'a' && buckyX > 0)
+	{
+		buckyX-=25;
+	}
+	else   if (key == 'd' && buckyX < 675)
+	{
+		buckyX+=25;
+	}
+	
+	
+}
+
+/*
+ function iSpecialKeyboard() is called whenver user hits special keys like-
+ function keys, home, end, pg up, pg down, arraows etc. you have to use
+ appropriate constants to detect them. A list is:
+ GLUT_KEY_F1, GLUT_KEY_F2, GLUT_KEY_F3, GLUT_KEY_F4, GLUT_KEY_F5, GLUT_KEY_F6,
+ GLUT_KEY_F7, GLUT_KEY_F8, GLUT_KEY_F9, GLUT_KEY_F10, GLUT_KEY_F11, GLUT_KEY_F12,
+ GLUT_KEY_LEFT, GLUT_KEY_UP, GLUT_KEY_RIGHT, GLUT_KEY_DOWN, GLUT_KEY_PAGE UP,
+ GLUT_KEY_PAGE DOWN, GLUT_KEY_HOME, GLUT_KEY_END, GLUT_KEY_INSERT
+ */
+void iSpecialKeyboard(unsigned char key)
+{
+
+	if (key == GLUT_KEY_END)
+	{
+		exit(0);
+	}
+	else if (key == GLUT_KEY_LEFT && buckyX > 0)
+	{
+		buckyX -= 25;
+	}
+	else if (key == GLUT_KEY_RIGHT && buckyX < 675)
+	{
+		buckyX += 25;
+	}
+	
+}
+
+int main()
+{
+
+	srand(time(NULL));
+	startTime=clock();
+	besTime=clock();
+	Music();
+	iInitialize(width, length , "eggtastic catch");
+	return 0;
+}
